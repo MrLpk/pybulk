@@ -37,11 +37,11 @@ data = db.excute_sql('select * from school')
 from .dbinterface import DBInterface
 
 def client(cfg=None, alchemy=True):
-    try:
-        from settings import db_config
-    except ModuleNotFoundError:
-        db_config = None
     if cfg is None:
-        cfg = db_config
+        try:
+            from settings import db_config
+            cfg = db_config
+        except (ModuleNotFoundError, ImportError):
+            db_config = None
     db = DBInterface(cfg, alchemy=alchemy)
     return db

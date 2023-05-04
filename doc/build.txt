@@ -1,0 +1,28 @@
+python setup.py sdist bdist_wheel
+
+twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+
+
+Using this token
+To use this API token:
+
+Set your username to __token__
+Set your password to the token value, including the pypi- prefix
+For example, if you are using Twine to upload multiple projects to PyPI, you can set up your $HOME/.pypirc file like this:
+
+[distutils]
+  index-servers =
+    pypi
+    PROJECT_NAME
+
+[pypi]
+  username = __token__
+  password = # either a user-scoped token or a project-scoped token you want to set as the default
+
+[PROJECT_NAME]
+  repository = https://upload.pypi.org/legacy/
+  username = __token__
+  password = # a project token 
+You can then use twine --repository PROJECT_NAME to switch to the correct token when uploading to PyPI.
+
+For further instructions on how to use this token, visit the PyPI help page.
