@@ -39,9 +39,9 @@ from .dbinterface import DBInterface
 def client(cfg=None, alchemy=True):
     if cfg is None:
         try:
-            from settings import db_config
-            cfg = db_config
+            from settings import DATABASE_CONFIG
+            cfg = DATABASE_CONFIG
         except (ModuleNotFoundError, ImportError):
-            db_config = None
+            cfg = None
     db = DBInterface(cfg, alchemy=alchemy)
     return db
