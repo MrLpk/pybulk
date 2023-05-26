@@ -40,17 +40,17 @@ class Database(object):
                             cursorclass=pymysql.cursors.DictCursor)
         return connection
 
-    def excute_sql_once(self, connection, sql):
+    def execute_sql_once(self, connection, sql):
         with connection.cursor() as cursor:
             cursor.execute(sql)
             result = cursor.fetchall()
             connection.commit()
             return result
 
-    def excute_sql(self, sql):
+    def execute_sql(self, sql):
         connection = self.connect()
         try:
-            return self.excute_sql_once(connection, sql)
+            return self.execute_sql_once(connection, sql)
         finally:
             connection.close()
 
@@ -214,7 +214,7 @@ class Dbalchemy(Database):
                 pass
         return self.engine.connect()
 
-    def excute_sql_once(self, connection, sql):
+    def execute_sql_once(self, connection, sql):
         sql = sql.replace('%', '%%')
         endtime = time.time() + self.timeout
         while True:
@@ -233,10 +233,10 @@ class Dbalchemy(Database):
             if time.time() > endtime:
                 raise Exception('数据库连接超时')
 
-    def excute_sql(self, sql):
+    def execute_sql(self, sql):
         connection = self.connect()
         try:
-            result = self.excute_sql_once(connection, sql)
+            result = self.execute_sql_once(connection, sql)
         finally:
             connection.close()
         return result

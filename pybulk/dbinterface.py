@@ -55,7 +55,7 @@ class DBInterface(object):
                     params['operator'] = 'insert'
                 sql = self.db.get_insert_sql(params, keys=keys)
                 try:
-                    self.db.excute_sql_once(conn, sql)
+                    self.db.execute_sql_once(conn, sql)
                 except Exception as e:
                     print(sql[:2500])
                     raise e
@@ -88,7 +88,7 @@ class DBInterface(object):
                     where_sql = f'where {key} in ({ids_txt})'
                 else:
                     raise Exception(f'update_same_val id type error:{ids[0]}')
-                self.db.excute_sql_once(conn, ' '.join(sql + [where_sql]))
+                self.db.execute_sql_once(conn, ' '.join(sql + [where_sql]))
         finally:
             conn.close()
 
@@ -105,7 +105,7 @@ class DBInterface(object):
                 }
                 sql = self.db.get_sql(params)
                 try:
-                    self.db.excute_sql_once(conn, sql)
+                    self.db.execute_sql_once(conn, sql)
                 except Exception as e:
                     print(_data),
                     print(sql)
@@ -113,12 +113,12 @@ class DBInterface(object):
         finally:
             conn.close()
 
-    def excute_sql(self, sql):
+    def execute_sql(self, sql):
         '''
         执行一次SQL
         param:sql,SQL语句
         '''
-        return self.db.excute_sql(sql)
+        return self.db.execute_sql(sql)
 
     def sign_length(self, storage_type, sign='sign'):
         '''
@@ -130,7 +130,7 @@ class DBInterface(object):
             'from': [storage_type],
         }
         sql = self.db.get_sql(params)
-        data = self.db.excute_sql(sql)
+        data = self.db.execute_sql(sql)
         return data[0][0]
 
     def get_signs_in_set(self, storage_type, sign='sign'):
@@ -147,7 +147,7 @@ class DBInterface(object):
                 'order by id',
                 'limit %d, %d' %(pg * limit, limit),
             ))
-            datas = self.db.excute_sql(sql)
+            datas = self.db.execute_sql(sql)
             if len(datas) == 0:
                 break
             for data in datas:
@@ -155,7 +155,7 @@ class DBInterface(object):
         return result
 
     def clean_table(self, table_name):
-        self.excute_sql('TRUNCATE %s' %table_name)
+        self.execute_sql('TRUNCATE %s' %table_name)
 
     def rename(self, old_name, new_name):
         '''
@@ -165,14 +165,14 @@ class DBInterface(object):
             'ALTER TABLE `%s`' %old_name,
             'RENAME TO `%s`;' %new_name,
         ))
-        self.excute_sql(sql)
+        self.execute_sql(sql)
 
     def exist_table(self, table_name):
         '''
         检查表是否存在
         '''
         sql = f'show tables like "{table_name}"'
-        return True if len(self.excute_sql(sql)) > 0 else False
+        return True if len(self.execute_sql(sql)) > 0 else False
 
     def get_column_names(self, table_name):
         '''
@@ -182,7 +182,7 @@ class DBInterface(object):
             'select column_name from information_schema.columns',
             f'where table_name="{table_name}"',
         ))
-        res = self.excute_sql(sql)
+        res = self.execute_sql(sql)
         try:
             return [x['column_name']for x in res]
         except Exception as e:
@@ -210,7 +210,7 @@ class DBInterface(object):
             'from information_schema.tables',
             f'where table_schema="{db_name}"'
         ))
-        res = self.excute_sql(sql)
+        res = self.execute_sql(sql)
         return [x['table_name']for x in res]
     
     def close(self):

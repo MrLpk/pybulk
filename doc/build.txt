@@ -2,7 +2,7 @@ python setup.py sdist bdist_wheel
 
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
-pip install --upgrade pybulk
+pip install --upgrade pybulk -i http://mirrors.aliyun.com/pypi/simple/
 
 Using this token
 To use this API token:
