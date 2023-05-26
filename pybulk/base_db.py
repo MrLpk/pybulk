@@ -16,7 +16,7 @@ def str_quote(s):
 class Database(object):
     is_sqllite = False
     def __init__(self, user=None, password=None, db=None, host='localhost', port=3306,
-            charset='utf8', sqllite_path=None, recycle=300, size=50):
+            charset='utf8', sqllite_path=None, recycle=300, size=50, timeout=20, interval=1):
         self.user = user
         self.pwd = password
         self.db = db
@@ -26,6 +26,8 @@ class Database(object):
         self.sqllite_path = sqllite_path
         self.recycle = recycle
         self.size = size
+        self.timeout = timeout
+        self.interval = interval
 
     def connect(self):
         connection = pymysql.connect(
@@ -214,7 +216,8 @@ class Dbalchemy(Database):
 
     def excute_sql_once(self, connection, sql):
         sql = sql.replace('%', '%%')
-        for x in range(5):
+        endtime = time.time() + self.timeout
+        while True:
             try:
                 result = connection.execute(sql)
                 if result.returns_rows:
@@ -223,10 +226,12 @@ class Dbalchemy(Database):
                     return None
             except Exception as e:
                 if 'Lost connection to' in str(e) or 'MySQL server has gone away' in str(e):
-                    print(f'与数据库失去连接，第{x+1}次等待重试...')
-                    time.sleep(15)
+                    print(f'与数据库失去连接，等待重试...')
+                    time.sleep(self.interval)
                 else:
                     raise e
+            if time.time() > endtime:
+                raise Exception('数据库连接超时')
 
     def excute_sql(self, sql):
         connection = self.connect()
