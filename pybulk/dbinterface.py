@@ -17,6 +17,8 @@ class DBInterface(object):
         param：storage_type，表名 
         param：datas，数据 
         '''  
+        if len(datas) == 0:
+            return
         if keys is None:
             keys = datas[0].keys()
         self.insert(storage_type, datas, operator='ignore', size=size, keys=keys) 
