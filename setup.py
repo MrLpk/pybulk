@@ -7,7 +7,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
  
 setuptools.setup(
     name='pybulk',
-    version="0.1.5",
+    version="0.1.6",
     author="pengkailiao",
     author_email="pengkailiao@gmail.com",
     description="PyBulk is a Python module that to allow simple and fast bulk data insertion into databases",
@@ -30,7 +30,7 @@ setuptools.setup(
     # 依赖模块
     install_requires=[
         'PyMySQL>=0.9.3',
-        'SQLAlchemy>=1.3.8',
+        'SQLAlchemy>=1.3.8,<=2.0.0',
     ],
     python_requires='>=3.6',
 )
