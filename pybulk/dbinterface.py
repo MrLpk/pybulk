@@ -29,6 +29,8 @@ class DBInterface(object):
         param：storage_type，表名 
         param：datas，数据 
         '''  
+        if len(datas) == 0:
+            return
         self.insert(storage_type, datas, operator='replace', size=size) 
  
     def insert(self, storage_type, datas, operator, size, keys): 
@@ -68,6 +70,8 @@ class DBInterface(object):
         '''
         更新数据，当所有要更新的值都相同时才可以使用
         '''
+        if len(ids) == 0:
+            return
         conn = self.db.connect()
         try:
             sql = [f'update {table} set']
@@ -77,6 +81,8 @@ class DBInterface(object):
                     _vals.append(f'{k}="{v}"')
                 elif type(v) in (int, float):
                     _vals.append(f'{k}={v}')
+                elif v is None:
+                    _vals.append(f'{k}=null')
                 else:
                     raise Exception(f'update_same_val val type error:{type(v)}')
             sql.append(','.join(_vals))
@@ -95,6 +101,8 @@ class DBInterface(object):
             conn.close()
 
     def update_data(self, storage_type, datas, key='id'):
+        if len(datas) == 0:
+            return
         conn = self.db.connect()
         try:
             for _data in datas:
