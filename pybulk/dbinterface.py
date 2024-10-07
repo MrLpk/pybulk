@@ -23,7 +23,7 @@ class DBInterface(object):
             keys = datas[0].keys()
         self.insert(storage_type, datas, operator='ignore', size=size, keys=keys) 
  
-    def replace_data(self, storage_type, datas, size=200): 
+    def replace_data(self, storage_type, datas, size=200, keys=None): 
         ''' 
         往指定表添加数据，遇到重复数据时，删除原有数据后再插入 
         param：storage_type，表名 
@@ -31,7 +31,9 @@ class DBInterface(object):
         '''  
         if len(datas) == 0:
             return
-        self.insert(storage_type, datas, operator='replace', size=size) 
+        if keys is None:
+            keys = datas[0].keys()
+        self.insert(storage_type, datas, operator='replace', size=size, keys=keys) 
  
     def insert(self, storage_type, datas, operator, size, keys): 
         ''' 
@@ -77,7 +79,7 @@ class DBInterface(object):
             sql = [f'update {table} set']
             _vals = []
             for k, v in vals.items():
-                if type(v) == str:
+                if type(v) is str:
                     _vals.append(f'{k}="{v}"')
                 elif type(v) in (int, float):
                     _vals.append(f'{k}={v}')
@@ -88,7 +90,7 @@ class DBInterface(object):
             sql.append(','.join(_vals))
             for pg in range(math.ceil(len(ids)/size)):
                 start, end = pg*size, (pg+1)*size
-                if type(ids[0]) == str:
+                if type(ids[0]) is str:
                     ids_txt = '","'.join(ids[start:end])
                     where_sql = f'where {key} in ("{ids_txt}")'
                 elif type(ids[0]) in (int, float):
@@ -117,11 +119,35 @@ class DBInterface(object):
                 try:
                     self.db.execute_sql_once(conn, sql)
                 except Exception as e:
-                    print(_data),
+                    print(_data)
                     print(sql)
                     raise e
         finally:
             conn.close()
+
+    def batch_update(self, storage_type, datas, key='id'):
+        '''
+        批量更新数据，采用事务方式
+
+        param：storage_type，表名
+        param：datas，数据
+        param：key，主键
+        '''
+        with self.db.engine.begin() as conn:
+            for _data in datas:
+                params = {
+                    'update': storage_type,
+                    'set': _data,
+                    'where':[
+                        (key, 'equals', str(_data[key])),
+                    ],
+                }
+                sql = self.db.get_sql(params)
+                try:
+                    conn.execute(sql)
+                except Exception as e:
+                    print(sql)
+                    raise e
 
     def execute_sql(self, sql):
         '''
