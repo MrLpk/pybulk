@@ -133,6 +133,8 @@ class DBInterface(object):
         param：datas，数据
         param：key，主键
         '''
+        if len(datas) == 0:
+            return
         with self.db.engine.begin() as conn:
             for _data in datas:
                 params = {
