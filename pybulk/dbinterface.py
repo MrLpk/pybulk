@@ -146,6 +146,7 @@ class DBInterface(object):
                 }
                 sql = self.db.get_sql(params)
                 try:
+                    sql = sql.replace('%', '%%')
                     conn.execute(sql)
                 except Exception as e:
                     print(sql)
