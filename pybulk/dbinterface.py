@@ -102,7 +102,14 @@ class DBInterface(object):
         finally:
             conn.close()
 
-    def update_data(self, storage_type, datas, key='id'):
+    def _update_data(self, storage_type, datas, key='id'):
+        '''
+        非事务方式更新数据，不适合大批量数据更新
+        
+        param：storage_type，表名
+        param：datas，数据
+        param：key，主键
+        '''
         if len(datas) == 0:
             return
         conn = self.db.connect()
@@ -124,8 +131,35 @@ class DBInterface(object):
                     raise e
         finally:
             conn.close()
+            
+    def update_data(self, storage_type, datas, key='id', size=1000):
+        '''
+        批量更新数据，采用事务方式
 
-    def batch_update(self, storage_type, datas, key='id'):
+        param：storage_type，表名
+        param：datas，数据
+        param：key，主键
+        '''
+        return self.batch_update(storage_type, datas, key)
+
+    def batch_update(self, storage_type, datas, key='id', size=1000):
+        '''
+        批量更新数据，采用事务方式
+
+        param：storage_type，表名
+        param：datas，数据
+        param：key，主键
+        '''
+        if len(datas) == 0:
+            return
+        for pg in range(0, len(datas), size):
+            _datas = datas[pg:pg + size]
+            if len(_datas) <= 20:
+                self._update_data(storage_type, _datas, key)
+            else:
+                self._batch_update(storage_type, _datas, key)
+
+    def _batch_update(self, storage_type, datas, key='id'):
         '''
         批量更新数据，采用事务方式
 
