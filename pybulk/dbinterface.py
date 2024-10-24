@@ -1,3 +1,4 @@
+import time
 import math
 
 from . import base_db
@@ -8,6 +9,7 @@ class DBInterface(object):
     def __init__(self, db_setting=None, alchemy=True):
         if alchemy:
             self.db = base_db.Dbalchemy(**db_setting)
+            self.py_db = base_db.Database(**db_setting)
         else:
             self.db = base_db.Database(**db_setting)
             
@@ -169,7 +171,10 @@ class DBInterface(object):
         '''
         if len(datas) == 0:
             return
-        with self.db.engine.begin() as conn:
+        # 一种实现方式
+        conn = self.py_db.connect()
+        retry = 3
+        with conn.cursor() as cursor:
             for _data in datas:
                 params = {
                     'update': storage_type,
@@ -179,12 +184,20 @@ class DBInterface(object):
                     ],
                 }
                 sql = self.db.get_sql(params)
-                try:
-                    sql = sql.replace('%', '%%')
-                    conn.execute(sql)
-                except Exception as e:
-                    print(sql)
-                    raise e
+                for _ in range(retry):
+                    try:
+                        cursor.execute(sql)
+                        break
+                    except Exception as e:
+                        if 'Deadlock found when trying to get lock;' in str(e):
+                            if _ == retry - 1:
+                                print(sql)
+                                raise e
+                            else:
+                                time.sleep(1.5)
+                                continue
+        conn.commit()
+        conn.close()
 
     def execute_sql(self, sql):
         '''
