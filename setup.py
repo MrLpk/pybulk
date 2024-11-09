@@ -7,7 +7,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
  
 setuptools.setup(
     name='pybulk',
-    version="0.2.9",
+    version="0.2.10",
     author="pengkailiao",
     author_email="pengkailiao@gmail.com",
     description="PyBulk is a Python module that to allow simple and fast bulk data insertion into databases",

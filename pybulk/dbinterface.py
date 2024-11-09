@@ -93,8 +93,12 @@ class DBInterface(object):
             for pg in range(math.ceil(len(ids)/size)):
                 start, end = pg*size, (pg+1)*size
                 if type(ids[0]) is str:
-                    ids_txt = '","'.join(ids[start:end])
-                    where_sql = f'where {key} in ("{ids_txt}")'
+                    _ids = []
+                    for x in ids[start:end]:
+                        x = x.replace('"', '""').replace("\\", "\\\\")
+                        _ids.append(f'"{x}"')
+                    ids_txt = ','.join(_ids)
+                    where_sql = f'where {key} in ({ids_txt})'
                 elif type(ids[0]) in (int, float):
                     ids_txt = ','.join((str(x)for x in ids[start:end]))
                     where_sql = f'where {key} in ({ids_txt})'
