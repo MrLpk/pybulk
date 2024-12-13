@@ -7,6 +7,8 @@ from . import base_db
 class DBInterface(object):
 
     def __init__(self, db_setting=None, alchemy=True):
+        self.deadlock_retry = 5
+        self.deadlock_sleep = 2.5
         if alchemy:
             self.db = base_db.Dbalchemy(**db_setting)
             self.py_db = base_db.Database(**db_setting)
@@ -104,7 +106,18 @@ class DBInterface(object):
                     where_sql = f'where {key} in ({ids_txt})'
                 else:
                     raise Exception(f'update_same_val id type error:{ids[0]}')
-                self.db.execute_sql_once(conn, ' '.join(sql + [where_sql]))
+                for _ in range(self.deadlock_retry):
+                    try:
+                        self.db.execute_sql_once(conn, ' '.join(sql + [where_sql]))
+                        break
+                    except Exception as e:
+                        if 'Deadlock found when trying to get lock;' in str(e):
+                            if _ == self.deadlock_retry - 1:
+                                print(sql)
+                                raise e
+                            else:
+                                time.sleep(self.deadlock_sleep)
+                                continue
         finally:
             conn.close()
 
@@ -177,7 +190,6 @@ class DBInterface(object):
             return
         # 一种实现方式
         conn = self.py_db.connect()
-        retry = 3
         with conn.cursor() as cursor:
             for _data in datas:
                 params = {
@@ -188,17 +200,17 @@ class DBInterface(object):
                     ],
                 }
                 sql = self.db.get_sql(params)
-                for _ in range(retry):
+                for _ in range(self.deadlock_retry):
                     try:
                         cursor.execute(sql)
                         break
                     except Exception as e:
                         if 'Deadlock found when trying to get lock;' in str(e):
-                            if _ == retry - 1:
+                            if _ == self.deadlock_retry - 1:
                                 print(sql)
                                 raise e
                             else:
-                                time.sleep(1.5)
+                                time.sleep(self.deadlock_sleep)
                                 continue
         conn.commit()
         conn.close()
