@@ -64,11 +64,18 @@ class DBInterface(object):
                 if self.db.is_sqllite:
                     params['operator'] = 'insert'
                 sql = self.db.get_insert_sql(params, keys=keys)
-                try:
-                    self.db.execute_sql_once(conn, sql)
-                except Exception as e:
-                    print(sql[:2500])
-                    raise e
+                for _ in range(self.deadlock_retry):
+                    try:
+                        self.db.execute_sql_once(conn, sql)
+                        break
+                    except Exception as e:
+                        if 'Deadlock found when trying to get lock;' in str(e):
+                                if _ == self.deadlock_retry - 1:
+                                    print(sql[:2500])
+                                    raise e
+                                else:
+                                    time.sleep(self.deadlock_sleep)
+                                    continue
         finally:
             conn.close()
 
