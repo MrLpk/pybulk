@@ -180,10 +180,11 @@ class DBInterface(object):
             return
         for pg in range(0, len(datas), size):
             _datas = datas[pg:pg + size]
-            if len(_datas) <= 20:
-                self._update_data(storage_type, _datas, key)
-            else:
-                self._batch_update(storage_type, _datas, key)
+            self._batch_update(storage_type, _datas, key)
+            # if len(_datas) <= 20:
+            #     self._update_data(storage_type, _datas, key)
+            # else:
+            #     self._batch_update(storage_type, _datas, key)
 
     def _batch_update(self, storage_type, datas, key='id'):
         '''
