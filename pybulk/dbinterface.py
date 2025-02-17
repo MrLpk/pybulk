@@ -180,7 +180,12 @@ class DBInterface(object):
             return
         for pg in range(0, len(datas), size):
             _datas = datas[pg:pg + size]
-            self._batch_update(storage_type, _datas, key)
+            if self.db.is_sqllite:
+                self._update_data(storage_type, _datas, key)
+            else:
+                self._batch_update(storage_type, _datas, key)
+
+            # sqllite_path is not None
             # if len(_datas) <= 20:
             #     self._update_data(storage_type, _datas, key)
             # else:
