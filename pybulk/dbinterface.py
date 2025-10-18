@@ -76,6 +76,9 @@ class DBInterface(object):
                                 else:
                                     time.sleep(self.deadlock_sleep)
                                     continue
+                        else:
+                            print(sql[:2500])
+                            raise e
         finally:
             conn.close()
 
@@ -228,6 +231,9 @@ class DBInterface(object):
                             else:
                                 time.sleep(self.deadlock_sleep)
                                 continue
+                        else:
+                            print(sql[:2500])
+                            raise e
         conn.commit()
         conn.close()
 
