@@ -94,7 +94,8 @@ class DBInterface(object):
             _vals = []
             for k, v in vals.items():
                 if type(v) is str:
-                    _vals.append(f'{k}="{v}"')
+                    _v = v.replace('"', '""').replace("\\", "\\\\")
+                    _vals.append(f'''{k}="{_v}"''')
                 elif type(v) in (int, float):
                     _vals.append(f'{k}={v}')
                 elif v is None:
